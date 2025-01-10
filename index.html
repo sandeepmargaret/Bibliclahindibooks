@@ -219,38 +219,33 @@
 
     <script>
         // Initialize PDF.js
-       pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
+        pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
 
-        const GITHUB_REPO = "https://raw.githubusercontent.com/sandeepmargaret/Bibliclahindibooks/main/";
-        
-        // Updated book data structure
-        const books = {
-            theology: [
-                { name: "सुसमाचार सुनाना आसान है.pdf", size: "2.5 MB", date: "2024-01-15" },
-                { name: "हिंदी बाइबल क़्विज और फक्ट्स.pdf", size: "1.8 MB", date: "2024-01-15" },
-                { name: "Ramabai.pdf", size: "1.8 MB", date: "2024-01-15" },
-                { name: "Topical-Index-of-Bible-Verses-Hindi.pdf", size: "1.8 MB", date: "2024-01-15" }
-            ],
-            commentary: [
-                { name: "Romans_Commentary.pdf", size: "3.2 MB", date: "2024-01-15" },
-                { name: "Genesis_Commentary.pdf", size: "2.9 MB", date: "2024-01-15" }
-            ],
-            biography: [
-                { name: "John_Calvin_Biography.pdf", size: "1.5 MB", date: "2024-01-15" },
-                { name: "Dietrich_Bonhoeffer.pdf", size: "1.7 MB", date: "2024-01-15" }
-            ],
-            "christian-life": [
-                { name: "The_Practice_of_Prayer.pdf", size: "1.1 MB", date: "2024-01-15" },
-                { name: "Life_of_Faith.pdf", size: "1.3 MB", date: "2024-01-15" }
-            ],
-            devotional: [ // New category
-                { name: "Morning_Devotions.pdf", size: "1.2 MB", date: "2024-01-16" },
-                { name: "Evening_Devotions.pdf", size: "1.4 MB", date: "2024-01-16" }
-            ]
-        };
+        const GITHUB_REPO = "https://api.github.com/repos/sandeepmargaret/Bibliclahindibooks/contents/";
+
+        // Function to fetch files from a category folder
+        async function fetchFiles(category) {
+            const response = await fetch(`${GITHUB_REPO}${category}`);
+            const files = await response.json();
+            return files.filter(file => file.name.endsWith('.pdf')).map(file => ({
+                name: file.name,
+                size: (file.size / (1024 * 1024)).toFixed(2) + " MB",
+                date: new Date(file.commit.commit.author.date).toISOString().split('T')[0]
+            }));
+        }
+
+        // Function to fetch all files and categorize them
+        async function fetchAllFiles() {
+            const categories = ["theology", "commentary", "biography", "christian-life", "devotional"];
+            const books = {};
+            for (const category of categories) {
+                books[category] = await fetchFiles(category);
+            }
+            return books;
+        }
 
         // PDF viewer variables
-         let pdfDoc = null;
+        let pdfDoc = null;
         let pageNum = 1;
         let pageRendering = false;
         let pageNumPending = null;
@@ -286,7 +281,7 @@
         }
 
         // Update page info display
-       function updatePageInfo() {
+        function updatePageInfo() {
             document.getElementById('pageInfo').textContent = `Page ${pageNum} of ${pdfDoc.numPages}`;
         }
 
@@ -329,9 +324,10 @@
             scale /= 1.2;
             renderPage(pageNum);
         }
+
         // Load and display PDF
-         async function loadPDF(url) {
-            console.log('Loading PDF from URL:', url); // Add this line
+        async function loadPDF(url) {
+            console.log('Loading PDF from URL:', url);
             document.getElementById('loadingSpinner').style.display = 'block';
             try {
                 const loadingTask = pdfjsLib.getDocument(url);
@@ -346,13 +342,14 @@
                 document.getElementById('loadingSpinner').style.display = 'none';
             }
         }
+
         // Create file item HTML
         function createFileItem(file, category) {
-            console.log(`Creating file item for: ${file.name} in category: ${category}`); // Add this line
+            console.log(`Creating file item for: ${file.name} in category: ${category}`);
             return `
                 <div class="file-item" data-category="${category}">
                     <span class="file-icon">📄</span>
-                    <span class="file-name" onclick="loadPDF('${GITHUB_REPO}${category}/${file.name}')">
+                    <span class="file-name" onclick="loadPDF('https://raw.githubusercontent.com/sandeepmargaret/Bibliclahindibooks/main/${category}/${file.name}')">
                         ${file.name.replace(/_/g, " ").replace(".pdf", "")}
                     </span>
                     <span class="file-meta">${file.size}</span>
@@ -360,11 +357,14 @@
                 </div>
             `;
         }
+
         // Display files based on category
-         function displayFiles(category = 'all') {
+        async function displayFiles(category = 'all') {
             const fileList = document.getElementById('fileList');
             fileList.innerHTML = '';
-            
+
+            const books = await fetchAllFiles();
+
             if (category === 'all') {
                 Object.entries(books).forEach(([cat, files]) => {
                     files.forEach(file => {
@@ -394,8 +394,7 @@
             pdfDoc = null;
         });
 
-
-      document.getElementById('prevPage').addEventListener('click', previousPage);
+        document.getElementById('prevPage').addEventListener('click', previousPage);
         document.getElementById('nextPage').addEventListener('click', nextPage);
         document.getElementById('zoomIn').addEventListener('click', zoomIn);
         document.getElementById('zoomOut').addEventListener('click', zoomOut);
