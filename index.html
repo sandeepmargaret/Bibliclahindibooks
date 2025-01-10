@@ -4,267 +4,403 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>बाइबल अध्ययन पुस्तकें</title>
+    <!-- Add PDF.js CDN -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
     <style>
-        /* General Styling */
         body {
-            font-family: 'Noto Sans', sans-serif;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Helvetica, Arial, sans-serif;
             margin: 0;
             padding: 0;
-            background-color: #f9f9f9;
-            color: #333;
-            line-height: 1.6;
+            background-color: #ffffff;
+            color: #24292e;
         }
 
-        header {
-            background-color: #004d40;
-            color: white;
-            padding: 1rem;
-            text-align: center;
+        .container {
+            max-width: 1012px;
+            margin: 0 auto;
+            padding: 24px;
         }
 
-        header h1 {
-            margin: 0;
-            font-size: 1.5rem;
+        .file-list {
+            border: 1px solid #e1e4e8;
+            border-radius: 6px;
+            margin-top: 16px;
         }
 
-        nav {
-            background-color: #e0f2f1;
-            padding: 1rem;
-            text-align: center;
-            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+        .file-item {
+            display: flex;
+            align-items: center;
+            padding: 8px 16px;
+            border-bottom: 1px solid #e1e4e8;
         }
 
-        nav label {
-            font-weight: bold;
-            display: block;
-            margin-bottom: 0.5rem;
+        .file-item:last-child {
+            border-bottom: none;
         }
 
-        nav select {
-            padding: 0.7rem;
-            font-size: 1rem;
-            margin: 0.5rem 0;
-            border: 1px solid #ccc;
-            border-radius: 5px;
-            background: white;
-            width: 100%;
-            max-width: 300px;
+        .file-item:hover {
+            background-color: #f6f8fa;
+        }
+
+        .file-icon {
+            margin-right: 16px;
+            color: #6a737d;
+        }
+
+        .file-name {
+            flex: 1;
+            color: #0366d6;
+            text-decoration: none;
             cursor: pointer;
         }
 
-        main {
-            max-width: 100%;
-            margin: 1rem auto;
-            padding: 1rem;
-            background: white;
-            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
-            border-radius: 8px;
+        .file-meta {
+            color: #6a737d;
+            font-size: 12px;
+            margin-left: 16px;
         }
 
-        main h2 {
-            color: #004d40;
-            font-size: 1.3rem;
-            margin-bottom: 1rem;
-            text-align: center;
+        .header {
+            padding: 16px;
+            background-color: #f6f8fa;
+            border-bottom: 1px solid #e1e4e8;
         }
 
-        #pdf-display {
-            white-space: pre-wrap;
-            background-color: #f1f8e9;
-            padding: 1.5rem;
-            margin-top: 1rem;
-            border: 1px solid #ddd;
-            border-radius: 5px;
-            height: 60vh; /* Height optimized for mobile */
-            overflow-y: auto;
-            font-family: monospace;
+        .category-nav {
+            margin-bottom: 16px;
         }
 
-        footer {
-            background-color: #004d40;
+        .category-button {
+            padding: 5px 16px;
+            margin-right: 8px;
+            border: 1px solid #e1e4e8;
+            border-radius: 6px;
+            background-color: #fff;
+            cursor: pointer;
+        }
+
+        .category-button.active {
+            background-color: #0366d6;
             color: white;
-            text-align: center;
-            padding: 1rem;
-            margin-top: 2rem;
-            font-size: 0.9rem;
+            border-color: #0366d6;
         }
 
-        /* Responsive Design */
-        @media (max-width: 768px) {
-            nav label, nav select {
-                font-size: 0.9rem;
-            }
-
-            nav select {
-                padding: 0.5rem;
-            }
-
-            header h1 {
-                font-size: 1.2rem;
-            }
-
-            main h2 {
-                font-size: 1.1rem;
-            }
-
-            #pdf-display {
-                padding: 1rem;
-                height: 50vh;
-            }
+        /* PDF Viewer Styles */
+        .pdf-viewer-modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.9);
+            z-index: 1000;
         }
 
-        @media (max-width: 480px) {
-            nav {
-                padding: 0.8rem;
-            }
+        .pdf-viewer-container {
+            position: relative;
+            width: 100%;
+            height: 100%;
+            display: flex;
+            flex-direction: column;
+        }
 
-            nav label, nav select {
-                font-size: 0.8rem;
-            }
+        .pdf-toolbar {
+            background-color: #333;
+            padding: 10px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            color: white;
+        }
 
-            nav select {
-                width: 90%;
-                margin: 0.3rem auto;
-            }
+        .pdf-controls {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
 
-            header h1 {
-                font-size: 1rem;
-            }
+        .pdf-controls button {
+            background-color: #0366d6;
+            color: white;
+            border: none;
+            padding: 5px 15px;
+            border-radius: 4px;
+            cursor: pointer;
+        }
 
-            main h2 {
-                font-size: 1rem;
-            }
+        .pdf-controls button:disabled {
+            background-color: #666;
+            cursor: not-allowed;
+        }
 
-            #pdf-display {
-                padding: 0.8rem;
-                height: 40vh;
-            }
+        .close-button {
+            background-color: #dc3545;
+            color: white;
+            border: none;
+            padding: 5px 15px;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+
+        #pdfCanvas {
+            margin: auto;
+            background-color: #666;
+        }
+
+        .canvas-container {
+            flex: 1;
+            overflow: auto;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        /* Loading Spinner */
+        .loading-spinner {
+            display: none;
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            width: 50px;
+            height: 50px;
+            border: 5px solid #f3f3f3;
+            border-top: 5px solid #0366d6;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+        }
+
+        @keyframes spin {
+            0% { transform: translate(-50%, -50%) rotate(0deg); }
+            100% { transform: translate(-50%, -50%) rotate(360deg); }
         }
     </style>
 </head>
 <body>
+    <div class="container">
+        <div class="header">
+            <h1>बाइबल अध्ययन पुस्तकें</h1>
+            <div class="category-nav">
+                <button class="category-button active" data-category="all">All</button>
+                <button class="category-button" data-category="theology">Theology</button>
+                <button class="category-button" data-category="commentary">Commentary</button>
+                <button class="category-button" data-category="biography">Biography</button>
+                <button class="category-button" data-category="christian-life">Christian Life</button>
+            </div>
+        </div>
 
-<header>
-    <h1>बाइबल अध्ययन पुस्तकें</h1>
-</header>
+        <div class="file-list" id="fileList">
+            <!-- Files will be populated here by JavaScript -->
+        </div>
+    </div>
 
-<nav>
-    <label for="book-select">बाइबल अध्ययन पुस्तकें पढ़ें: </label>
-    <select id="book-select" onchange="loadBook()">
-        <option value="">कोई श्रेणी चुनें</option>
-        <optgroup label="धर्मशास्त्र पुस्तकें" id="theology"></optgroup>
-        <optgroup label="टीकाएँ" id="commentary"></optgroup>
-        <optgroup label="जीवनी" id="biography"></optgroup>
-        <optgroup label="मसीही जीवन" id="christian-life"></optgroup>
-    </select>
-    <label for="toc-select">विषय सूची: </label>
-    <select id="toc-select" onchange="navigateToPage()">
-        <option value="">कोई अनुभाग चुनें</option>
-    </select>
-</nav>
+    <!-- PDF Viewer Modal -->
+    <div class="pdf-viewer-modal" id="pdfViewerModal">
+        <div class="pdf-viewer-container">
+            <div class="pdf-toolbar">
+                <div class="pdf-controls">
+                    <button id="prevPage" disabled>Previous</button>
+                    <span id="pageInfo">Page 1 of 1</span>
+                    <button id="nextPage" disabled>Next</button>
+                    <button id="zoomOut">Zoom Out</button>
+                    <button id="zoomIn">Zoom In</button>
+                </div>
+                <button class="close-button" id="closeViewer">Close</button>
+            </div>
+            <div class="canvas-container">
+                <canvas id="pdfCanvas"></canvas>
+            </div>
+        </div>
+    </div>
 
-<main>
-    <h2>पुस्तक की सामग्री</h2>
-    <div id="pdf-display">यहां सामग्री दिखेगी। कृपया एक पुस्तक चुनें...</div>
-</main>
+    <!-- Loading Spinner -->
+    <div class="loading-spinner" id="loadingSpinner"></div>
 
-<footer>
-    <p>&copy; 2025 बाइबल अध्ययन पुस्तकें। सभी अधिकार सुरक्षित।</p>
-</footer>
+    <script>
+        // Initialize PDF.js
+        pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
 
-<script>
-    const GITHUB_REPO = "https://raw.githubusercontent.com/sandeepmargaret/Bibliclahindibooks//main/";
+        const GITHUB_REPO = "https://raw.githubusercontent.com/yourusername/yourrepo/main/";
+        
+        // Book data structure
+        const books = {
+            theology: [
+                { name: "Systematic_Theology.pdf", size: "2.5 MB", date: "2024-01-15" },
+                { name: "Biblical_Theology.pdf", size: "1.8 MB", date: "2024-01-15" }
+            ],
+            commentary: [
+                { name: "Romans_Commentary.pdf", size: "3.2 MB", date: "2024-01-15" },
+                { name: "Genesis_Commentary.pdf", size: "2.9 MB", date: "2024-01-15" }
+            ],
+            biography: [
+                { name: "John_Calvin_Biography.pdf", size: "1.5 MB", date: "2024-01-15" },
+                { name: "Dietrich_Bonhoeffer.pdf", size: "1.7 MB", date: "2024-01-15" }
+            ],
+            "christian-life": [
+                { name: "The_Practice_of_Prayer.pdf", size: "1.1 MB", date: "2024-01-15" },
+                { name: "Life_of_Faith.pdf", size: "1.3 MB", date: "2024-01-15" }
+            ]
+        };
 
-    const books = {
-        theology: ["सुसमाचार सुनाना आसान है.pdf", "Biblical_Theology.pdf"],
-        commentary: ["Romans_Commentary.pdf", "Genesis_Commentary.pdf"],
-        biography: ["John_Calvin_Biography.pdf", "Dietrich_Bonhoeffer.pdf"],
-        "christian-life": ["The_Practice_of_Prayer.pdf", "Life_of_Faith.pdf"]
-    };
+        // PDF viewer variables
+        let pdfDoc = null;
+        let pageNum = 1;
+        let pageRendering = false;
+        let pageNumPending = null;
+        let scale = 1.5;
+        const canvas = document.getElementById('pdfCanvas');
+        const ctx = canvas.getContext('2d');
 
-    function populateDropdown() {
-        for (const category in books) {
-            const optgroup = document.getElementById(category.replace("_", "-"));
-            books[category].forEach((book) => {
-                const option = document.createElement("option");
-                option.value = `${category}/${book}`;
-                option.textContent = book.replace(/_/g, " ").replace(".pdf", "");
-                optgroup.appendChild(option);
+        // Render the PDF page
+        function renderPage(num) {
+            pageRendering = true;
+            pdfDoc.getPage(num).then(function(page) {
+                const viewport = page.getViewport({ scale: scale });
+                canvas.height = viewport.height;
+                canvas.width = viewport.width;
+
+                const renderContext = {
+                    canvasContext: ctx,
+                    viewport: viewport
+                };
+
+                const renderTask = page.render(renderContext);
+
+                renderTask.promise.then(function() {
+                    pageRendering = false;
+                    if (pageNumPending !== null) {
+                        renderPage(pageNumPending);
+                        pageNumPending = null;
+                    }
+                    updatePageInfo();
+                    updateButtonStates();
+                });
             });
         }
-    }
 
-    let currentPDF = null;
-    let pdfjsLib = null;
+        // Update page info display
+        function updatePageInfo() {
+            document.getElementById('pageInfo').textContent = `Page ${pageNum} of ${pdfDoc.numPages}`;
+        }
 
-    async function loadBook() {
-        const select = document.getElementById("book-select");
-        const bookPath = select.value;
+        // Update button states
+        function updateButtonStates() {
+            document.getElementById('prevPage').disabled = pageNum <= 1;
+            document.getElementById('nextPage').disabled = pageNum >= pdfDoc.numPages;
+        }
 
-        if (bookPath) {
-            const response = await fetch(`${GITHUB_REPO}${bookPath}`);
-            if (response.ok) {
-                const arrayBuffer = await response.arrayBuffer();
-                pdfjsLib = await import("https://cdnjs.cloudflare.com/ajax/libs/pdf.js/2.16.105/pdf.min.js");
+        // Go to previous page
+        function previousPage() {
+            if (pageNum <= 1) return;
+            pageNum--;
+            queueRenderPage(pageNum);
+        }
 
-                const pdf = await pdfjsLib.getDocument({ data: arrayBuffer }).promise;
-                currentPDF = pdf;
+        // Go to next page
+        function nextPage() {
+            if (pageNum >= pdfDoc.numPages) return;
+            pageNum++;
+            queueRenderPage(pageNum);
+        }
 
-                displayTableOfContents(pdf);
-                displayPage(1); // डिफ़ॉल्ट रूप से पहला पृष्ठ दिखाएँ
+        // Queue the page rendering
+        function queueRenderPage(num) {
+            if (pageRendering) {
+                pageNumPending = num;
             } else {
-                alert("PDF लोड करने में त्रुटि। कृपया फ़ाइल URL की जांच करें।");
+                renderPage(num);
             }
         }
-    }
 
-    async function displayTableOfContents(pdf) {
-        const tocSelect = document.getElementById("toc-select");
-        tocSelect.innerHTML = '<option value="">कोई अनुभाग चुनें</option>';
+        // Zoom functions
+        function zoomIn() {
+            scale *= 1.2;
+            renderPage(pageNum);
+        }
 
-        const outline = await pdf.getOutline();
-        if (outline) {
-            outline.forEach((item, index) => {
-                const option = document.createElement("option");
-                option.value = item.dest[0];
-                option.textContent = item.title || `अनुभाग ${index + 1}`;
-                tocSelect.appendChild(option);
+        function zoomOut() {
+            scale /= 1.2;
+            renderPage(pageNum);
+        }
+
+        // Load and display PDF
+        async function loadPDF(url) {
+            document.getElementById('loadingSpinner').style.display = 'block';
+            try {
+                const loadingTask = pdfjsLib.getDocument(url);
+                pdfDoc = await loadingTask.promise;
+                pageNum = 1;
+                renderPage(pageNum);
+                document.getElementById('pdfViewerModal').style.display = 'block';
+            } catch (error) {
+                console.error('Error loading PDF:', error);
+                alert('Error loading PDF. Please try again later.');
+            } finally {
+                document.getElementById('loadingSpinner').style.display = 'none';
+            }
+        }
+
+        // Create file item HTML
+        function createFileItem(file, category) {
+            return `
+                <div class="file-item" data-category="${category}">
+                    <span class="file-icon">📄</span>
+                    <span class="file-name" onclick="loadPDF('${GITHUB_REPO}${category}/${file.name}')">
+                        ${file.name.replace(/_/g, " ").replace(".pdf", "")}
+                    </span>
+                    <span class="file-meta">${file.size}</span>
+                    <span class="file-meta">${file.date}</span>
+                </div>
+            `;
+        }
+
+        // Display files based on category
+        function displayFiles(category = 'all') {
+            const fileList = document.getElementById('fileList');
+            fileList.innerHTML = '';
+            
+            if (category === 'all') {
+                Object.entries(books).forEach(([cat, files]) => {
+                    files.forEach(file => {
+                        fileList.innerHTML += createFileItem(file, cat);
+                    });
+                });
+            } else {
+                books[category].forEach(file => {
+                    fileList.innerHTML += createFileItem(file, category);
+                });
+            }
+        }
+
+        // Event Listeners
+        document.querySelectorAll('.category-button').forEach(button => {
+            button.addEventListener('click', (e) => {
+                document.querySelectorAll('.category-button').forEach(btn => {
+                    btn.classList.remove('active');
+                });
+                e.target.classList.add('active');
+                displayFiles(e.target.dataset.category);
             });
-        } else {
-            const option = document.createElement("option");
-            option.textContent = "कोई विषय सूची उपलब्ध नहीं है।";
-            tocSelect.appendChild(option);
-        }
-    }
+        });
 
-    async function navigateToPage() {
-        const tocSelect = document.getElementById("toc-select");
-        const pageIndex = tocSelect.value;
+        document.getElementById('closeViewer').addEventListener('click', () => {
+            document.getElementById('pdfViewerModal').style.display = 'none';
+            pdfDoc = null;
+        });
 
-        if (pageIndex) {
-            const pageNum = await currentPDF.getPageIndex(pageIndex) + 1;
-            displayPage(pageNum);
-        }
-    }
+        document.getElementById('prevPage').addEventListener('click', previousPage);
+        document.getElementById('nextPage').addEventListener('click', nextPage);
+        document.getElementById('zoomIn').addEventListener('click', zoomIn);
+        document.getElementById('zoomOut').addEventListener('click', zoomOut);
 
-    async function displayPage(pageNum) {
-        const pdfDisplay = document.getElementById("pdf-display");
-        pdfDisplay.innerHTML = ""; // पिछली सामग्री साफ़ करें
+        // Prevent right-click on PDF viewer
+        document.getElementById('pdfCanvas').addEventListener('contextmenu', (e) => {
+            e.preventDefault();
+        });
 
-        if (currentPDF) {
-            const page = await currentPDF.getPage(pageNum);
-            const textContent = await page.getTextContent();
-
-            textContent.items.forEach((item) => {
-                pdfDisplay.textContent += item.str + "\n";
-            });
-        }
-    }
-
-    populateDropdown();
-</script>
-
-<script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/2.16.105/pdf.min.js"></script>
-
+        // Initialize display
+        displayFiles('all');
+    </script>
 </body>
 </html>
