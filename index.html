@@ -187,15 +187,14 @@
                 <button class="category-button" data-category="commentary">Commentary</button>
                 <button class="category-button" data-category="biography">Biography</button>
                 <button class="category-button" data-category="christian-life">Christian Life</button>
-                <button class="category-button" data-category="devotional">Devotional</button> <!-- New category button -->
+                <button class="category-button" data-category="devotional">Devotional</button>
             </div>
         </div>
 
-         <div class="file-list" id="fileList">
+        <div class="file-list" id="fileList">
             <!-- Files will be populated here by JavaScript -->
         </div>
     </div>
-
     <!-- PDF Viewer Modal -->
    <div class="pdf-viewer-modal" id="pdfViewerModal">
         <div class="pdf-viewer-container">
@@ -214,12 +213,13 @@
             </div>
         </div>
     </div>
+
     <!-- Loading Spinner -->
     <div class="loading-spinner" id="loadingSpinner"></div>
 
     <script>
         // Initialize PDF.js
-        pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
+       pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
 
         const GITHUB_REPO = "https://raw.githubusercontent.com/sandeepmargaret/Bibliclahindibooks/main/";
         
@@ -249,7 +249,7 @@
         };
 
         // PDF viewer variables
-        let pdfDoc = null;
+         let pdfDoc = null;
         let pageNum = 1;
         let pageRendering = false;
         let pageNumPending = null;
@@ -285,7 +285,7 @@
         }
 
         // Update page info display
-        function updatePageInfo() {
+       function updatePageInfo() {
             document.getElementById('pageInfo').textContent = `Page ${pageNum} of ${pdfDoc.numPages}`;
         }
 
@@ -328,26 +328,26 @@
             scale /= 1.2;
             renderPage(pageNum);
         }
-
         // Load and display PDF
          async function loadPDF(url) {
-        console.log('Loading PDF from URL:', url); // Add this line
-        document.getElementById('loadingSpinner').style.display = 'block';
-        try {
-            const loadingTask = pdfjsLib.getDocument(url);
-            pdfDoc = await loadingTask.promise;
-            pageNum = 1;
-            renderPage(pageNum);
-            document.getElementById('pdfViewerModal').style.display = 'block';
-        } catch (error) {
-            console.error('Error loading PDF:', error);
-            alert('Error loading PDF. Please try again later.');
-        } finally {
-            document.getElementById('loadingSpinner').style.display = 'none';
+            console.log('Loading PDF from URL:', url); // Add this line
+            document.getElementById('loadingSpinner').style.display = 'block';
+            try {
+                const loadingTask = pdfjsLib.getDocument(url);
+                pdfDoc = await loadingTask.promise;
+                pageNum = 1;
+                renderPage(pageNum);
+                document.getElementById('pdfViewerModal').style.display = 'block';
+            } catch (error) {
+                console.error('Error loading PDF:', error);
+                alert('Error loading PDF. Please try again later.');
+            } finally {
+                document.getElementById('loadingSpinner').style.display = 'none';
+            }
         }
-    }
         // Create file item HTML
-       function createFileItem(file, category) {
+        function createFileItem(file, category) {
+            console.log(`Creating file item for: ${file.name} in category: ${category}`); // Add this line
             return `
                 <div class="file-item" data-category="${category}">
                     <span class="file-icon">📄</span>
@@ -359,9 +359,8 @@
                 </div>
             `;
         }
-
         // Display files based on category
-        function displayFiles(category = 'all') {
+         function displayFiles(category = 'all') {
             const fileList = document.getElementById('fileList');
             fileList.innerHTML = '';
             
@@ -394,7 +393,8 @@
             pdfDoc = null;
         });
 
-        document.getElementById('prevPage').addEventListener('click', previousPage);
+
+      document.getElementById('prevPage').addEventListener('click', previousPage);
         document.getElementById('nextPage').addEventListener('click', nextPage);
         document.getElementById('zoomIn').addEventListener('click', zoomIn);
         document.getElementById('zoomOut').addEventListener('click', zoomOut);
@@ -405,6 +405,7 @@
         });
 
         // Initialize display
+        displayFiles('all');
     </script>
 </body>
 </html>
