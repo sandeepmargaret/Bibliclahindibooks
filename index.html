@@ -325,22 +325,22 @@
         }
 
         // Load and display PDF
-        async function loadPDF(url) {
-            document.getElementById('loadingSpinner').style.display = 'block';
-            try {
-                const loadingTask = pdfjsLib.getDocument(url);
-                pdfDoc = await loadingTask.promise;
-                pageNum = 1;
-                renderPage(pageNum);
-                document.getElementById('pdfViewerModal').style.display = 'block';
-            } catch (error) {
-                console.error('Error loading PDF:', error);
-                alert('Error loading PDF. Please try again later.');
-            } finally {
-                document.getElementById('loadingSpinner').style.display = 'none';
-            }
+         async function loadPDF(url) {
+        console.log('Loading PDF from URL:', url); // Add this line
+        document.getElementById('loadingSpinner').style.display = 'block';
+        try {
+            const loadingTask = pdfjsLib.getDocument(url);
+            pdfDoc = await loadingTask.promise;
+            pageNum = 1;
+            renderPage(pageNum);
+            document.getElementById('pdfViewerModal').style.display = 'block';
+        } catch (error) {
+            console.error('Error loading PDF:', error);
+            alert('Error loading PDF. Please try again later.');
+        } finally {
+            document.getElementById('loadingSpinner').style.display = 'none';
         }
-
+    }
         // Create file item HTML
         function createFileItem(file, category) {
             return `
